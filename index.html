@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    .container  {
+        display: flex;
+    }
+    .child {
+        width: 100px;
+        height: 100px;
+        margin: auto;
+    }
+    canvas#canvas {
+        border: 1px solid black;
+    }
+</style>
+<body>
+<div class="container">
+    <canvas id="canvas" width="600" height="600"  class="child" ></canvas>
+    <div class="child">
+        <label for="speed">Speed</label>
+        <input type="number" id="speed">
+        <label for="direction">Direction</label>
+        <input type="number" id="direction">
+   </div>
+
+</div>
+
+<!-- Get latest version: https://cdnjs.com/libraries/fabric.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.0/fabric.min.js" integrity="sha512-1+czAStluVmzKLZD98uvRGNVbc+r9zLKV4KeAJmvikygfO71u3dtgo2G8+uB1JjCh2GVln0ofOpz9ZTxqJQX/w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.0/fabric.js" integrity="sha512-9SDRKbT29xuJwhBXLN21SuoCAnsqoxjglN180x4p65KXrVAD1/FT3OLmny24IVu0S7lNJ4Pnco7SNkwpWu3uPg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>-->
+<script>
+    const canvas = new fabric.Canvas('canvas');
+    const island = new fabric.Circle({
+        radius: 40, fill: 'green', left: 100, top: 100
+    });
+    canvas.add(island);
+    const boat = new fabric.Triangle({
+        width: 20, height: 30, fill: 'blue', left: 350, top: 450
+    });
+    canvas.add(boat);
+</script>
+
+</body>
+</html>
