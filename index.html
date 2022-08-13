@@ -63,6 +63,10 @@
         </div>
       </div>
       <div class="child">
+        <label for="disable-current">Disable current</label>
+        <input id="disable-current" type="checkbox" onclick="run()">
+      </div>
+      <div class="child">
         <input type="button" value="Run" onclick="run()">
         <input type="button" value="Reset" onclick="reset()">
       </div>
@@ -106,29 +110,32 @@
 
   function calcSpeedComponent(speed, angle, type) {
     const trigFn = type === 'x' ? Math.cos : Math.sin;
-    return speed * trigFn(90 - angle)
+    return speed * trigFn(-angle * Math.PI / 180);
   }
 
-  function calcFinal(type) {
-    const attr = type === 'x' ? 'left' : 'top';
+  function calcDelta(type) {
     const time = 5;
     const boatComponent = calcSpeedComponent(boatSpeed.value, boatDirection.value, type);
+    const boatDelta = time * boatComponent;
+    console.log("boatDelta", boatDelta)
+
+    if (disableCurrent.checked) {
+      return boatDelta;
+    }
     const currentComponent = calcSpeedComponent(currentSpeed.value, currentDirection.value, type);
-    console.log(type, boatComponent, currentComponent);
-    return boat.get(attr) +
-      time * boatComponent +
-      time * currentComponent;
+    return boatDelta + time * currentComponent;
   }
 
   function run() {
     fabric.runningAnimations.cancelAll();
     moveBoatToStart(boat);
-    const finalX = calcFinal('x');
-    const finalY = calcFinal('y')
+    const finalX = boat.get('left') + calcDelta('x');
+    const finalY = boat.get('top') + calcDelta('y')
     stopBoat = boat.animate({'left': finalX, 'top': finalY}, {
       onChange: canvas.renderAll.bind(canvas),
       duration: 10000,
-      easing: easeLinear
+      easing: easeLinear,
+      abort: () => { return boat.intersectsWithObject(island); }
     });
   }
 
@@ -136,6 +143,7 @@
   const currentSpeed = document.getElementById('current-speed');
   const boatDirection = document.getElementById('boat-direction');
   const boatSpeed = document.getElementById('boat-speed');
+  const disableCurrent = document.getElementById('disable-current');
   const canvas = new fabric.Canvas('canvas');
   reset();
 </script>
