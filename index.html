@@ -47,8 +47,8 @@
           <input type="number" id="boat-speed" min="0" max="100">
         </div>
         <div>
-          <label for="boat-direction">Direction</label>
-          <input type="number" id="boat-direction" min="0" max="360">
+          <label for="boat-direction">Direction (degrees) </label>
+          <input type="number" id="boat-direction" min="0" max="360" onChange="turnBoat(this.value)">
         </div>
       </div>
       <div class="child">
@@ -69,7 +69,7 @@
       <div class="child">
         <input type="button" value="Run" onclick="run()">
         <input type="button" value="Stop" onclick="stop()">
-        <input type="button" value="Start over" onclick="startOver()">
+        <input type="button" value="Start over" onclick="start()">
       </div>
     </div>
   </div>
@@ -100,18 +100,16 @@
   }
   let boat = null, island = null;
   let finished = false;
-  function startOver() {
-    stop();
+  function start() {
     [boat, island] = initCanvas(canvas);
     currentDirection.value = Math.round(Math.random() * 360);
     currentSpeed.value = Math.round(Math.random() * 100);
-    boatDirection.value = 0;
-    boatSpeed.value = 0;
+    boatDirection.value = 90;
   }
 
   function calcSpeedComponent(speed, angle, type) {
     const trigFn = type === 'x' ? Math.cos : Math.sin;
-    return speed * trigFn(-angle * Math.PI / 180);
+    return speed * 5 * trigFn(-angle * Math.PI / 180);
   }
 
   function calcDelta(type) {
@@ -128,22 +126,24 @@
 
   function stop() {
     fabric.runningAnimations.cancelAll();
-  }
-  function run() {
-    stop();
     finished = false;
     moveBoatToStart(boat);
+  }
+
+  function turnBoat(angle) {
+    boat.animate('angle', 90 - angle, { onChange: canvas.renderAll.bind(canvas)} );
+  }
+
+  function run() {
+    stop();
     const startX = boat.get('left');
     const startY = boat.get('top');
     const deltaX = calcDelta('x');
     const deltaY = calcDelta('y');
 
-    const hypo = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
-    const angle = Math.acos(deltaX/hypo)
-    boat.animate('angle',90 - (angle * 180 / Math.PI), {onChange: canvas.renderAll.bind(canvas)});
     boat.animate({'left': startX + deltaX, 'top': startY + deltaY }, {
       onChange: canvas.renderAll.bind(canvas),
-      duration: 5000,
+      duration: 10000,
       easing: easeLinear,
       abort: function abort() {
         boat.setCoords();
@@ -161,6 +161,7 @@
           }
           return true;
         }
+        return false;
       }
     });
   }
@@ -171,7 +172,7 @@
   const boatSpeed = document.getElementById('boat-speed');
   const disableCurrent = document.getElementById('disable-current');
   const canvas = new fabric.Canvas('canvas');
-  startOver();
+  start();
 </script>
 
 </body>
