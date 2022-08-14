@@ -64,11 +64,12 @@
       </div>
       <div class="child">
         <label for="disable-current">Disable current</label>
-        <input id="disable-current" type="checkbox" onclick="run()">
+        <input id="disable-current" type="checkbox">
       </div>
       <div class="child">
         <input type="button" value="Run" onclick="run()">
-        <input type="button" value="Reset" onclick="reset()">
+        <input type="button" value="Stop" onclick="stop()">
+        <input type="button" value="Start over" onclick="startOver()">
       </div>
     </div>
   </div>
@@ -86,8 +87,8 @@
   }
   function initCanvas(canvas) {
     canvas.clear();
-    const island = new fabric.Circle({
-      radius: 30, fill: 'green', left: 100, top: 100
+    const island = new fabric.Rect({
+      height: 40, width: 40, fill: 'green', left: 100, top: 100
     });
     canvas.add(island);
     const boat = new fabric.Triangle({
@@ -98,9 +99,9 @@
     return [boat, island];
   }
   let boat = null, island = null;
-  let stopBoat = null;
-  function reset() {
-    fabric.runningAnimations.cancelAll();
+  let finished = false;
+  function startOver() {
+    stop();
     [boat, island] = initCanvas(canvas);
     currentDirection.value = Math.round(Math.random() * 360);
     currentSpeed.value = Math.round(Math.random() * 100);
@@ -115,10 +116,9 @@
 
   function calcDelta(type) {
     const time = 5;
+    console.log("calcDelta")
     const boatComponent = calcSpeedComponent(boatSpeed.value, boatDirection.value, type);
     const boatDelta = time * boatComponent;
-    console.log("boatDelta", boatDelta)
-
     if (disableCurrent.checked) {
       return boatDelta;
     }
@@ -126,16 +126,42 @@
     return boatDelta + time * currentComponent;
   }
 
-  function run() {
+  function stop() {
     fabric.runningAnimations.cancelAll();
+  }
+  function run() {
+    stop();
+    finished = false;
     moveBoatToStart(boat);
-    const finalX = boat.get('left') + calcDelta('x');
-    const finalY = boat.get('top') + calcDelta('y')
-    stopBoat = boat.animate({'left': finalX, 'top': finalY}, {
+    const startX = boat.get('left');
+    const startY = boat.get('top');
+    const deltaX = calcDelta('x');
+    const deltaY = calcDelta('y');
+
+    const hypo = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
+    const angle = Math.acos(deltaX/hypo)
+    boat.animate('angle',90 - (angle * 180 / Math.PI), {onChange: canvas.renderAll.bind(canvas)});
+    boat.animate({'left': startX + deltaX, 'top': startY + deltaY }, {
       onChange: canvas.renderAll.bind(canvas),
-      duration: 10000,
+      duration: 5000,
       easing: easeLinear,
-      abort: () => { return boat.intersectsWithObject(island); }
+      abort: function abort() {
+        boat.setCoords();
+        island.setCoords();
+        if (boat.intersectsWithObject(island)) {
+          if (!finished) {
+            alert("You made it to the shore!");
+            finished = true;
+          }
+          return true;
+        } else if (!boat.isOnScreen()) {
+           if (!finished) {
+            alert("You fell of the edge of the world!");
+            finished = true;
+          }
+          return true;
+        }
+      }
     });
   }
 
@@ -145,7 +171,7 @@
   const boatSpeed = document.getElementById('boat-speed');
   const disableCurrent = document.getElementById('disable-current');
   const canvas = new fabric.Canvas('canvas');
-  reset();
+  startOver();
 </script>
 
 </body>
