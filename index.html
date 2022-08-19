@@ -129,7 +129,7 @@
   function stop() {
     fabric.runningAnimations.cancelAll();
     finished = false;
-    moveBoatToStart(boat);
+    initCanvas(canvas);
   }
 
   function turnBoat(angle) {
