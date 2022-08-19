@@ -83,25 +83,27 @@
     return b + (t/d) * c;
   }
   function moveBoatToStart(boat) {
-    boat.set({'left': 350, 'top': 450});
+    boat.left = 350;
+    boat.top = 450;
+    boat.setCoords();
   }
   function initCanvas(canvas) {
     canvas.clear();
-    const island = new fabric.Rect({
+    island = new fabric.Rect({
       height: 40, width: 40, fill: 'green', left: 100, top: 100
     });
     canvas.add(island);
-    const boat = new fabric.Triangle({
+    boat = new fabric.Triangle({
       width: 20, height: 30, fill: 'blue'
     });
-    moveBoatToStart(boat);
     canvas.add(boat);
-    return [boat, island];
+    moveBoatToStart(boat);
   }
+
   let boat = null, island = null;
   let finished = false;
   function start() {
-    [boat, island] = initCanvas(canvas);
+    initCanvas(canvas);
     currentDirection.value = Math.round(Math.random() * 360);
     currentSpeed.value = Math.round(Math.random() * 100);
     boatDirection.value = 90;
@@ -156,8 +158,9 @@
           return true;
         } else if (!boat.isOnScreen()) {
            if (!finished) {
-            alert("You fell of the edge of the world!");
-            finished = true;
+             alert("You fell of the edge of the world!");
+             initCanvas(canvas);
+             finished = true;
           }
           return true;
         }
