@@ -44,11 +44,11 @@
         <div class="heading">Boat:</div>
         <div>
           <label for="boat-speed">Speed</label>
-          <input type="number" id="boat-speed" min="0" max="100">
+          <input type="number" id="boat-speed" min="0" max="1000" value="100">
         </div>
         <div>
           <label for="boat-direction">Direction (degrees) </label>
-          <input type="number" id="boat-direction" min="0" max="360" onChange="turnBoat(this.value)">
+          <input type="number" id="boat-direction" min="0" max="360" onChange="turnBoat()">
         </div>
       </div>
       <div class="child">
@@ -64,12 +64,12 @@
       </div>
       <div class="child">
         <label for="disable-current">Disable current</label>
-        <input id="disable-current" type="checkbox">
+        <input id="disable-current" type="checkbox" onChange="disableCurrentChanged()">
       </div>
       <div class="child">
         <input type="button" value="Run" onclick="run()">
         <input type="button" value="Stop" onclick="stop()">
-        <input type="button" value="Start over" onclick="start()">
+        <input type="button" value="Start over" onclick="startOver()">
       </div>
     </div>
   </div>
@@ -86,27 +86,65 @@
     boat.left = 350;
     boat.top = 450;
     boat.setCoords();
+    if (started) {
+      boat.angle = 90 - boatDirection.value;
+    } else {
+      turnBoat();
+    }
   }
-  function initCanvas(canvas) {
-    canvas.clear();
+
+  function makeIsland() {
     island = new fabric.Rect({
-      height: 40, width: 40, fill: 'green', left: 100, top: 100
+      height: 40, width: 40, fill: 'green', left: islandLeft, top: islandTop
     });
+    return island;
+  }
+
+  function initCanvas() {
+    canvas.clear();
+    island = makeIsland();
     canvas.add(island);
     boat = new fabric.Triangle({
       width: 20, height: 30, fill: 'blue'
     });
     canvas.add(boat);
     moveBoatToStart(boat);
+    renderCurrent();
   }
 
-  let boat = null, island = null;
+  let boat = null, island = null, arrow = null;
   let finished = false;
+  let started = false;
+  let islandLeft = null;
+  let islandTop = null;
+
+  function renderCurrent() {
+    if (started) {
+      canvas.add(arrow);
+      return;
+    }
+    fabric.Image.fromURL('arrow.png', function(oImg) {
+      oImg.scale(0.35).set('flipX', true).set('left', 350)
+      arrow = oImg;
+      canvas.add(oImg);
+      turn(oImg, 180 - currentDirection.value);
+    });
+  }
   function start() {
-    initCanvas(canvas);
     currentDirection.value = Math.round(Math.random() * 360);
     currentSpeed.value = Math.round(Math.random() * 100);
     boatDirection.value = 90;
+    if (!started) {
+      islandLeft = 80 + Math.random() * 100;
+      islandTop = 80 + Math.random() * 100;
+    }
+    initCanvas();
+    started = true;
+  }
+
+  function startOver() {
+    started = false;
+    start();
   }
 
   function calcSpeedComponent(speed, angle, type) {
@@ -116,7 +154,6 @@
 
   function calcDelta(type) {
     const time = 5;
-    console.log("calcDelta")
     const boatComponent = calcSpeedComponent(boatSpeed.value, boatDirection.value, type);
     const boatDelta = time * boatComponent;
     if (disableCurrent.checked) {
@@ -129,17 +166,27 @@
   function stop() {
     fabric.runningAnimations.cancelAll();
     finished = false;
-    initCanvas(canvas);
+    initCanvas();
   }
 
-  function turnBoat(angle) {
-    boat.animate('angle', 90 - angle, { onChange: canvas.renderAll.bind(canvas)} );
+  function turn(target, angle) {
+    target._setOriginToCenter();
+    target.animate('angle', angle, { onChange: canvas.renderAll.bind(canvas)} );
+  }
+  function turnBoat() {
+    turn(boat, 90 - boatDirection.value);
+  }
+
+  function disableCurrentChanged() {
+    arrow.visible = !disableCurrent.checked
+    canvas.renderAll();
   }
 
   function run() {
     stop();
-    const startX = boat.get('left');
-    const startY = boat.get('top');
+    //todo clean up
+    const startX = boat.left;
+    const startY = boat.top;
     const deltaX = calcDelta('x');
     const deltaY = calcDelta('y');
 
@@ -148,6 +195,7 @@
       duration: 10000,
       easing: easeLinear,
       abort: function abort() {
+        //must call setCoords for intersectWithObject to work
         boat.setCoords();
         island.setCoords();
         if (boat.intersectsWithObject(island)) {
@@ -159,7 +207,7 @@
         } else if (!boat.isOnScreen()) {
            if (!finished) {
              alert("You fell of the edge of the world!");
-             initCanvas(canvas);
+             initCanvas();
              finished = true;
           }
           return true;
