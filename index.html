@@ -56,11 +56,11 @@
         <div class="heading">Current:</div>
         <div>
           <label for="current-speed">Speed</label>
-          <input type="number" id="current-speed" readonly>
+          <input type="number" id="current-speed">
         </div>
         <div>
-          <label for="current-direction">Direction</label>
-          <input type="number" id="current-direction" readonly>
+          <label for="current-direction">Direction (degrees)</label>
+          <input type="number" id="current-direction"  onChange="turnCurrent()">
         </div>
       </div>
       <div class="child">
@@ -128,7 +128,7 @@
       oImg.scale(0.35).set('flipX', true).set('left', 350)
       arrow = oImg;
       canvas.add(oImg);
-      turn(oImg, 180 - currentDirection.value);
+      turnCurrent();
     });
   }
   function start() {
@@ -176,6 +176,9 @@
   }
   function turnBoat() {
     turn(boat, 90 - boatDirection.value);
+  }
+  function turnCurrent() {
+    turn(arrow, 180 - currentDirection.value);
   }
 
   function disableCurrentChanged() {
