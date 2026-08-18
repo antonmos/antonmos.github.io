@@ -100,8 +100,8 @@
   }
 
   function makeIsland() {
-    island = new fabric.Rect({
-      height: 40, width: 40, fill: 'green', left: islandLeft, top: islandTop
+    island = new fabric.Text('🏝️', {
+      fontSize: 40, left: islandLeft, top: islandTop
     });
     return island;
   }
@@ -110,8 +110,8 @@
     canvas.clear();
     island = makeIsland();
     canvas.add(island);
-    boat = new fabric.Triangle({
-      width: 20, height: 30, fill: 'blue'
+    boat = new fabric.Text('⛵', {
+      fontSize: 32
     });
     canvas.add(boat);
     moveBoatToStart(boat);
