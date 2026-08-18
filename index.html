@@ -101,7 +101,7 @@
 
   function makeIsland() {
     island = new fabric.Text('🏝️', {
-      fontSize: 40, left: islandLeft, top: islandTop
+      fontSize: 80, left: islandLeft, top: islandTop
     });
     return island;
   }
@@ -111,7 +111,7 @@
     island = makeIsland();
     canvas.add(island);
     boat = new fabric.Text('⛵', {
-      fontSize: 32
+      fontSize: 64
     });
     canvas.add(boat);
     moveBoatToStart(boat);
