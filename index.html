@@ -101,7 +101,7 @@
 
   function makeIsland() {
     island = new fabric.Text('🏝️', {
-      fontSize: 80, left: islandLeft, top: islandTop
+      fontSize: 80, left: islandLeft, top: islandTop, selectable: false, evented: false
     });
     return island;
   }
@@ -111,7 +111,7 @@
     island = makeIsland();
     canvas.add(island);
     boat = new fabric.Text('⛵', {
-      fontSize: 32
+      fontSize: 32, selectable: false, evented: false
     });
     canvas.add(boat);
     moveBoatToStart(boat);
@@ -175,6 +175,16 @@
     initCanvas();
   }
 
+  function iconsTouching(a, b) {
+    const centerA = a.getCenterPoint();
+    const centerB = b.getCenterPoint();
+    const distance = Math.hypot(centerA.x - centerB.x, centerA.y - centerB.y);
+    // Emoji glyphs render smaller than their font-size bounding box, so use a
+    // radius per icon rather than the full box when checking if they touch.
+    const touchRadius = a.fontSize * 0.35 + b.fontSize * 0.35;
+    return distance < touchRadius;
+  }
+
   function turn(target, angle) {
     target._setOriginToCenter();
     target.animate('angle', angle, { onChange: canvas.renderAll.bind(canvas)} );
@@ -204,10 +214,8 @@
       duration: 10000,
       easing: easeLinear,
       abort: function abort() {
-        //must call setCoords for intersectWithObject to work
         boat.setCoords();
-        island.setCoords();
-        if (boat.intersectsWithObject(island)) {
+        if (iconsTouching(boat, island)) {
           if (!finished) {
             alert("You made it to the shore!");
             finished = true;
